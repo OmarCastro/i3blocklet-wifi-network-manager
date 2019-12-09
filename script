@@ -25,6 +25,15 @@ INTERFACE="${BLOCK_INSTANCE:-$(nmcli -f "type,device" -t device | awk -F':' '$1 
 [[ -z "$INTERFACE" && ! -d /sys/class/net/${INTERFACE}/wireless ]] && exit
 
 
+
+handle_buttons(){
+  while read button; do
+    case "$button" in
+	    1) ( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && setsid ./mouse-left-click ) > /dev/null  ;;
+    esac
+  done
+}
+
 function printBlock(){
 	if [[ "$(nmcli radio wifi)" = 'disabled' ]]; then
 		echo "off"
@@ -53,4 +62,5 @@ function displayInfo(){
 
 }
 
+displayInfo &
 handle_buttons
