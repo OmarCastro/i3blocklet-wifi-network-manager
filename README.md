@@ -1,2 +1,2 @@
-# i3blocklet-network-manager
-i3blocks blocket to manage connections using network manager 
+# i3blocklet-wifi-network-manager
+i3blocks blocket to manage wifi connections using network manager 
