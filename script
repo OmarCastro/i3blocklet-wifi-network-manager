@@ -16,14 +16,12 @@
 
 #------------------------------------------------------------------------
 
-#set BLOCK_INSTANCE as interface or set the first wifi one found on nmcli
+#set BLOCK_INSTANCE as interface or set the first wifi device found on nmcli
 INTERFACE="${BLOCK_INSTANCE:-$(nmcli -f "type,device" -t device | awk -F':' '$1 == "wifi" {print $2; exit}')}"
-
 #------------------------------------------------------------------------
 
 #if there is no wireless connection (e.g. desktop), this block should not be displayed.
-[[ -z "$INTERFACE" && ! -d /sys/class/net/${INTERFACE}/wireless ]] && exit
-
+[[ -z "$INTERFACE" || ! -d /sys/class/net/${INTERFACE}/wireless ]] && exit
 
 
 handle_buttons(){
@@ -35,13 +33,22 @@ handle_buttons(){
   done
 }
 
+SHOW_SSID="${show_ssid:-false}"
+if [[ $SHOW_SSID = 'true' ]]; then
+	NMCLI_FIELDS="device,active,signal,ssid"
+	AWK_PRINT_PARAMS='{print $3"% "$4}'
+else
+	NMCLI_FIELDS="device,active,signal"
+	AWK_PRINT_PARAMS='{print $3"%"}'
+fi
+
 function printBlock(){
 	if [[ "$(nmcli radio wifi)" = 'disabled' ]]; then
 		echo "off"
 	elif [[ "$(cat /sys/class/net/$INTERFACE/operstate)" = 'down' ]]; then
 		echo "down"
 	else
-		nmcli -f "device,active,signal" -t device wifi list --rescan no | awk -F: '$1 == "'"$INTERFACE"'" && $2 == "yes" {print $3"%"}'
+		nmcli -f "$NMCLI_FIELDS" -t device wifi list --rescan no | awk -F: '$1 == "'"$INTERFACE"'" && $2 == "yes" '"$AWK_PRINT_PARAMS"
 	fi
 }
 
