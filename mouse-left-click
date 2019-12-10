@@ -16,8 +16,8 @@
 
 
 ROFI_ARGS=()
-if ! [[ -z "$rofi_theme" ]]; then
-  ROFI_ARGS+=( -theme "$rofi_theme" )
+if ! [[ -z "${rofi_theme_left_click:-$rofi_theme}" ]]; then
+  ROFI_ARGS+=( -theme "${rofi_theme_left_click:-$rofi_theme}" )
 fi
 if ! [[ -z "$rofi_window_anchor" ]]; then
   ROFI_ARGS+=( -m -3 -theme-str '#window {anchor:'"$rofi_window_anchor"';}' )
