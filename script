@@ -23,6 +23,9 @@ INTERFACE="${BLOCK_INSTANCE:-$(nmcli -f "type,device" -t device | awk -F':' '$1 
 #if there is no wireless connection (e.g. desktop), this block should not be displayed.
 [[ -z "$INTERFACE" || ! -d /sys/class/net/${INTERFACE}/wireless ]] && exit
 
+# guarantee that the lang used is the same, as some validations expects the default language: english
+unset LANG;
+
 
 handle_buttons(){
   while read button; do
@@ -59,11 +62,21 @@ function displayInfo(){
 	while true; do
 		if IFS= read -t 5 -r line; then
 			case "$line" in
-				unavailable|connected|disconnected ) CONNECTING=false; printBlock;;
-				connecting* ) CONNECTING=true; echo "$line";;
-				* ) CONNECTING=false; echo "$line";;
+				unavailable|connected|disconnected ) 
+					CONNECTING=false;
+					printBlock
+					;;
+				connecting* ) 
+					CONNECTING=true;
+					echo "$line"
+					;;
+				* )
+					CONNECTING=false;
+					echo "$line"
+					;;
 			esac
-		elif [ "$CONNECTING" = false ]; then
+			sleep 0.1
+		elif [[ "$CONNECTING" != "true" ]]; then
 			printBlock
 		fi
 	done < <(nmcli m | grep --line-buffered -oP "$INTERFACE: \K.*")
